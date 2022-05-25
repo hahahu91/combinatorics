@@ -6,6 +6,30 @@
 #include <limits>
 using namespace std;
 
+int sum(int si_a, int si_b)
+{
+	if (((si_b > 0) && (si_a > (numeric_limits<int>::max() - si_b))) || ((si_b < 0) && (si_a < (numeric_limits<int>::max() - si_b))))
+	{
+		return numeric_limits<int>::max();
+	}
+	else
+	{
+		return si_a + si_b;
+	}
+}
+
+int sub(int si_a, int si_b)
+{
+	if ((si_b > 0 && si_a < numeric_limits<int>::min() + si_b) || (si_b < 0 && si_a > numeric_limits<int>::max() + si_b))
+	{
+		return si_a;
+	}
+	else
+	{
+		return si_a - si_b;
+	}
+}
+
 void hungarianAlgorithm(vector<vector<int>>& a, int n)
 {
 	vector<int> u(n + 1), v(n + 1), p(n + 1), way(n + 1);
@@ -22,7 +46,7 @@ void hungarianAlgorithm(vector<vector<int>>& a, int n)
 			for (int j = 1; j <= n; ++j) //пересчитываем массив minv,находим в нем минимум deltu (изначально INF) и столбец j1, в котором он достигнут
 				if (!used[j])
 				{
-					int cur = a[i0][j] - u[i0] - v[j];
+					int cur = sub(sub(a[i0][j], u[i0]), v[j]);
 					if (cur < minv[j])
 						minv[j] = cur, way[j] = j0;
 					if (minv[j] < delta)
@@ -31,9 +55,9 @@ void hungarianAlgorithm(vector<vector<int>>& a, int n)
 			
 			for (int j = 1; j <= n; ++j) // производим пересчет потенциала u и v, соответствующее изменение minv
 				if (used[j])
-					u[p[j]] += delta, v[j] -= delta;
+					u[p[j]] = sum(u[p[j]], delta), v[j] = sub(v[j], delta);
 				else
-					minv[j] -= delta;
+					minv[j] = sub(minv[j], delta);
 			j0 = j1;
 		} while (p[j0] != 0); // если нашли свободный столбец — выходим из цикла
 		do //ищем увеличивающуюся цепочку, пользуясь массивом предков way
@@ -52,11 +76,8 @@ void hungarianAlgorithm(vector<vector<int>>& a, int n)
 		int cost = a[j][ans[j]];
 		cout << j << "=>" << ans[j] << " cost: " << cost << endl;
 	}
-
 }
 
-
-   
 
 int main()
 {
@@ -68,7 +89,9 @@ int main()
 	{
 		for (int j = 1; j <= n; j++)
 		{
-			cin >> a[i][j];
+			int cur; 
+			cin >> cur;
+			cur == 1000 ? a[i][j] = numeric_limits<int>::max() : a[i][j] = cur;
 		}
 	}
 	hungarianAlgorithm(a, n);
